@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import {
   AnimatePresence,
@@ -7,8 +9,6 @@ import {
   useTransform,
 } from "framer-motion";
 import { Instagram, Mail, X } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 type FooterIconProps = {
   label: string;
@@ -27,9 +27,6 @@ function FooterIcon({ label, href, onClick, children }: FooterIconProps) {
   const x = useSpring(mx, { stiffness: 420, damping: 26, mass: 0.35 });
   const y = useSpring(my, { stiffness: 420, damping: 26, mass: 0.35 });
 
-  const base =
-    "group relative grid place-items-center w-16 h-16 md:w-[74px] md:h-[74px] border-2 border-neutral-700 bg-black/40 backdrop-blur rounded-none";
-
   const handleMove = (e: React.MouseEvent) => {
     const el = ref.current;
     if (!el) return;
@@ -46,63 +43,100 @@ function FooterIcon({ label, href, onClick, children }: FooterIconProps) {
     my.set(0);
   };
 
-  const Inner = (
-    <motion.span
-      className="relative grid place-items-center"
-      whileHover={{ scale: 1.12, rotate: -2 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 360, damping: 18 }}
-    >
-      {/* glitch shadow */}
-      <span className="absolute inset-0 translate-x-[2px] -translate-y-[1px] opacity-30 text-red-500 blur-[0.3px]">
-        {children}
-      </span>
-      <span className="relative">{children}</span>
-
-      {/* micro-strobe */}
-      <AnimatePresence>
-        {hovered && (
-          <motion.span
-            aria-hidden
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.08, 0, 0.06, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.55 }}
-            className="pointer-events-none absolute inset-[-10px] bg-white mix-blend-overlay"
-          />
-        )}
-      </AnimatePresence>
-    </motion.span>
-  );
-
-  const Tooltip = (
-    <AnimatePresence>
-      {hovered && (
-        <motion.div
-          initial={{ opacity: 0, y: 10, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 10, scale: 0.98 }}
-          transition={{ duration: 0.12 }}
-          className="pointer-events-none absolute -top-11 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] tracking-[0.32em] uppercase text-neutral-200"
-        >
-          <span className="px-3 py-1 border border-neutral-700 bg-black/85">
-            {label}
-          </span>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-
   const Shell = (
     <div
       ref={ref}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={handleLeave}
       onMouseMove={handleMove}
-      className={base + " hover:border-red-600 hover:text-red-500 transition"}
+      style={{
+        width: 74,
+        height: 74,
+        border: "2px solid #404040",
+        background: "rgba(0,0,0,0.45)",
+        backdropFilter: "blur(6px)",
+        display: "grid",
+        placeItems: "center",
+        position: "relative",
+        cursor: "pointer",
+      }}
     >
-      {Tooltip}
-      {Inner}
+      <AnimatePresence>
+        {hovered && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            transition={{ duration: 0.12 }}
+            style={{
+              pointerEvents: "none",
+              position: "absolute",
+              top: -44,
+              left: "50%",
+              transform: "translateX(-50%)",
+              whiteSpace: "nowrap",
+              fontSize: 10,
+              letterSpacing: "0.32em",
+              textTransform: "uppercase",
+              color: "#e5e5e5",
+            }}
+          >
+            <span
+              style={{
+                padding: "6px 10px",
+                border: "1px solid #404040",
+                background: "rgba(0,0,0,0.85)",
+              }}
+            >
+              {label}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div
+        whileHover={{ scale: 1.12, rotate: -2 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 360, damping: 18 }}
+        style={{ position: "relative", display: "grid", placeItems: "center" }}
+      >
+        {/* glitch shadow */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            transform: "translate(2px,-1px)",
+            opacity: 0.3,
+            color: "#ef4444",
+            filter: "blur(0.3px)",
+            display: "grid",
+            placeItems: "center",
+          }}
+        >
+          {children}
+        </div>
+        <div style={{ position: "relative" }}>{children}</div>
+
+        {/* micro-strobe */}
+        <AnimatePresence>
+          {hovered && (
+            <motion.div
+              aria-hidden
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.08, 0, 0.06, 0] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.55 }}
+              style={{
+                pointerEvents: "none",
+                position: "absolute",
+                inset: -10,
+                background: "#fff",
+                mixBlendMode: "overlay",
+              }}
+            />
+          )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 
@@ -113,10 +147,9 @@ function FooterIcon({ label, href, onClick, children }: FooterIconProps) {
         target="_blank"
         rel="noopener noreferrer"
         aria-label={label}
-        style={{ x, y }}
+        style={{ x, y, position: "relative" }}
         whileHover={{ y: -3 }}
         transition={{ type: "spring", stiffness: 280, damping: 18 }}
-        className="relative"
       >
         {Shell}
       </motion.a>
@@ -128,10 +161,9 @@ function FooterIcon({ label, href, onClick, children }: FooterIconProps) {
       type="button"
       aria-label={label}
       onClick={onClick}
-      style={{ x, y }}
+      style={{ x, y, position: "relative", background: "transparent", border: 0, padding: 0 }}
       whileHover={{ y: -3 }}
       transition={{ type: "spring", stiffness: 280, damping: 18 }}
-      className="relative"
     >
       {Shell}
     </motion.button>
@@ -145,11 +177,9 @@ type Collection = {
   images: string[];
 };
 
-export default function Portfolio() {
+export default function Page() {
   const [activeCollectionKey, setActiveCollectionKey] = useState("hitmen-scab");
   const [activeImage, setActiveImage] = useState<string | null>(null);
-
-  const cloudinary = (url: string) => url;
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -198,23 +228,7 @@ export default function Portfolio() {
     []
   );
 
-  // Dev “tests” to catch paste/truncation issues early
-  if (typeof window !== "undefined") {
-    console.assert(collections.length === 2, "Expected 2 collections");
-    console.assert(
-      collections.every((c) =>
-        c.images.every((u) => typeof u === "string" && u.startsWith("https://"))
-      ),
-      "Expected all image URLs to be https strings"
-    );
-    console.assert(
-      collections.every((c) => c.images.length > 0),
-      "Expected each collection to have at least 1 image"
-    );
-  }
-
-  const activeCollection =
-    collections.find((c) => c.key === activeCollectionKey) || collections[0];
+  const active = collections.find((c) => c.key === activeCollectionKey) || collections[0];
 
   return (
     <div
@@ -222,42 +236,88 @@ export default function Portfolio() {
         mouseX.set(e.clientX / window.innerWidth);
         mouseY.set(e.clientY / window.innerHeight);
       }}
-      className="relative bg-[#0a0a0a] text-neutral-100 min-h-screen overflow-hidden font-mono tracking-tight border-[6px] md:border-[10px] border-neutral-800"
+      style={{
+        minHeight: "100vh",
+        background: "#0a0a0a",
+        color: "#f5f5f5",
+        fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas",
+        border: "10px solid #262626",
+        position: "relative",
+        overflow: "hidden",
+      }}
     >
       {/* Moving grid */}
-      <motion.div
-        style={{ x: bgX, y: bgY }}
-        className="pointer-events-none absolute inset-0 opacity-[0.09] mix-blend-screen"
-      >
-        <div className="w-full h-full bg-[linear-gradient(to_right,#ff000020_1px,transparent_1px),linear-gradient(to_bottom,#ff000020_1px,transparent_1px)] bg-[size:70px_70px]" />
+      <motion.div style={{ x: bgX, y: bgY, position: "absolute", inset: 0, opacity: 0.09, mixBlendMode: "screen" }}>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,0,0,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,0,0,0.12) 1px, transparent 1px)",
+            backgroundSize: "70px 70px",
+          }}
+        />
       </motion.div>
 
       {/* HERO */}
-      <section className="relative min-h-[72vh] md:h-screen flex flex-col justify-center items-center text-center px-6 pt-20 pb-16">
-        <h1 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-[-0.08em] uppercase">
+      <section
+        style={{
+          minHeight: "72vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          textAlign: "center",
+          padding: "80px 24px 64px",
+          position: "relative",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "clamp(44px, 9vw, 96px)",
+            fontWeight: 900,
+            letterSpacing: "-0.08em",
+            textTransform: "uppercase",
+            margin: 0,
+          }}
+        >
           STILLS BY BILL
         </h1>
-        <p className="mt-6 text-neutral-400 uppercase text-xs tracking-widest">
+        <div style={{ opacity: 0.7, marginTop: 18, letterSpacing: "0.3em", textTransform: "uppercase", fontSize: 12 }}>
           Live concert and event photography
-        </p>
-        <p className="mt-3 text-neutral-300 uppercase text-[11px] tracking-[0.28em]">
+        </div>
+        <div style={{ opacity: 0.85, marginTop: 10, letterSpacing: "0.28em", textTransform: "uppercase", fontSize: 11 }}>
           Shot in the pit · UK shows · Available for bookings
-        </p>
+        </div>
       </section>
 
       {/* Sticky show switcher */}
-      <section className="sticky top-0 z-30 bg-[#0a0a0a] relative border-y-2 border-neutral-700">
-        <div className="flex flex-wrap justify-center gap-3 py-4 uppercase text-xs tracking-widest px-6">
+      <section
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 20,
+          background: "#0a0a0a",
+          borderTop: "2px solid #404040",
+          borderBottom: "2px solid #404040",
+          padding: "14px 18px",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
           {collections.map((c) => (
             <button
               key={c.key}
               onClick={() => setActiveCollectionKey(c.key)}
-              className={
-                "px-4 py-2 border-2 " +
-                (c.key === activeCollectionKey
-                  ? "border-red-600 text-red-500"
-                  : "border-neutral-700 text-neutral-400")
-              }
+              style={{
+                padding: "10px 12px",
+                textTransform: "uppercase",
+                letterSpacing: "0.25em",
+                fontSize: 12,
+                cursor: "pointer",
+                border: `2px solid ${c.key === activeCollectionKey ? "#ef4444" : "#404040"}`,
+                color: c.key === activeCollectionKey ? "#ef4444" : "#bdbdbd",
+                background: "transparent",
+              }}
             >
               {c.label}
             </button>
@@ -266,85 +326,98 @@ export default function Portfolio() {
       </section>
 
       {/* GALLERY */}
-      <section className="relative py-14 md:py-32">
-        <div className="text-center text-[10px] md:text-xs tracking-[0.32em] md:tracking-widest uppercase text-neutral-400 mb-8 md:mb-10 px-6">
-          {activeCollection.location}
+      <section style={{ padding: "42px 24px 90px", position: "relative" }}>
+        <div
+          style={{
+            textAlign: "center",
+            fontSize: 11,
+            letterSpacing: "0.32em",
+            textTransform: "uppercase",
+            opacity: 0.7,
+            marginBottom: 22,
+          }}
+        >
+          {active.location}
         </div>
 
-        {/* MOBILE FIRST: vertical feed */}
-        <div className="px-6 md:hidden">
-          <div className="grid grid-cols-1 gap-6">
-            {activeCollection.images.map((src, i) => (
-              <motion.button
-                type="button"
-                key={i}
-                whileTap={{ scale: 0.99 }}
-                className="text-left border-[6px] border-neutral-500 bg-black"
-                onClick={() => setActiveImage(src)}
-              >
-                <Card className="overflow-hidden rounded-none bg-black">
-                  <img
-                    loading="lazy"
-                    src={cloudinary(src)}
-                    alt={activeCollection.label + " " + (i + 1)}
-                    className="w-full aspect-[4/5] object-cover grayscale contrast-125 md:hover:grayscale-0 transition"
-                  />
-                </Card>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-
-        {/* DESKTOP: horizontal strip */}
-        <motion.div className="hidden md:flex gap-14 px-10 overflow-x-scroll no-scrollbar">
-          {activeCollection.images.map((src, i) => (
-            <motion.div
+        {/* Mobile-first vertical feed */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(1, minmax(0, 1fr))", gap: 18, maxWidth: 980, margin: "0 auto" }}>
+          {active.images.map((src, i) => (
+            <motion.button
               key={i}
-              whileHover={{ scale: 1.06 }}
-              className="min-w-[55vw] cursor-zoom-in border-[6px] border-neutral-500"
+              type="button"
+              whileTap={{ scale: 0.99 }}
               onClick={() => setActiveImage(src)}
+              style={{
+                padding: 0,
+                border: "6px solid #737373",
+                background: "#000",
+                cursor: "zoom-in",
+              }}
             >
-              <Card className="overflow-hidden rounded-none bg-black">
-                <img
-                  loading="lazy"
-                  src={cloudinary(src)}
-                  alt={activeCollection.label + " " + (i + 1)}
-                  className="h-[70vh] w-full object-cover grayscale contrast-125 md:hover:grayscale-0 transition"
-                />
-              </Card>
-            </motion.div>
+              <img
+                src={src}
+                alt={`${active.label} ${i + 1}`}
+                loading="lazy"
+                style={{
+                  width: "100%",
+                  aspectRatio: "4 / 5",
+                  objectFit: "cover",
+                  filter: "grayscale(1) contrast(1.25)",
+                  display: "block",
+                }}
+              />
+            </motion.button>
           ))}
-        </motion.div>
+        </div>
       </section>
 
       {/* FULLSCREEN */}
       <AnimatePresence>
         {activeImage && (
           <motion.div
-            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setActiveImage(null)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.95)",
+              zIndex: 50,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
-            <Button
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 setActiveImage(null);
               }}
-              className="absolute top-6 right-6"
-              variant="ghost"
+              style={{
+                position: "absolute",
+                top: 18,
+                right: 18,
+                border: "2px solid #404040",
+                background: "transparent",
+                color: "#fff",
+                padding: 10,
+                cursor: "pointer",
+              }}
+              aria-label="Close"
             >
               <X />
-            </Button>
+            </button>
+
             <motion.img
               initial={{ scale: 0.96 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.98 }}
-              src={cloudinary(activeImage)}
+              src={activeImage}
               alt="Fullscreen"
-              className="max-h-[90vh] max-w-[90vw] object-contain"
               onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: "90vw", maxHeight: "90vh", objectFit: "contain" }}
             />
           </motion.div>
         )}
@@ -353,63 +426,49 @@ export default function Portfolio() {
       {/* MOBILE STICKY BOOKING CTA */}
       <motion.a
         href="mailto:stillsbybill55@gmail.com?subject=Booking%20%2F%20Press%20Request"
-        className="md:hidden fixed bottom-5 right-5 z-50 px-5 py-3 border-2 border-red-600 bg-black/75 backdrop-blur text-red-500 uppercase text-[11px] tracking-[0.32em] shadow-[10px_10px_0px_#111]"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         whileTap={{ scale: 0.99 }}
+        style={{
+          position: "fixed",
+          right: 18,
+          bottom: 18,
+          zIndex: 60,
+          padding: "12px 14px",
+          border: "2px solid #ef4444",
+          background: "rgba(0,0,0,0.75)",
+          color: "#ef4444",
+          letterSpacing: "0.32em",
+          textTransform: "uppercase",
+          fontSize: 11,
+          boxShadow: "10px 10px 0px #111",
+          textDecoration: "none",
+        }}
       >
-        <motion.span
-          aria-hidden
-          className="absolute inset-0"
-          animate={{ opacity: [0, 0.06, 0, 0.04, 0] }}
-          transition={{ repeat: Infinity, duration: 2.8 }}
-          style={{ background: "white", mixBlendMode: "overlay" }}
-        />
-        <span className="relative">Booking / Contact</span>
+        Booking / Contact
       </motion.a>
 
       {/* FOOTER */}
-      <footer className="relative border-t-2 border-neutral-700 py-20 overflow-hidden">
-        <motion.div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-red-600/50"
-          animate={{ x: ["-30%", "130%"] }}
-          transition={{ repeat: Infinity, duration: 2.2, ease: "linear" }}
-        />
-
-        <motion.div
-          className="absolute left-1/2 -translate-x-1/2 -top-10 hidden md:block"
-          animate={{ opacity: [0.4, 1, 0.6] }}
-          transition={{ repeat: Infinity, duration: 1.4 }}
-        >
-          <button
-            type="button"
-            onClick={() => (window.location.href = "mailto:stillsbybill55@gmail.com")}
-            className="px-6 py-2 border-2 border-red-600 text-red-500 tracking-[0.35em] uppercase text-xs bg-black"
-          >
-            Booking / Contact
-          </button>
-        </motion.div>
-
-        <div className="flex justify-center gap-8 md:gap-10 mt-14">
-          <FooterIcon
-            label="Instagram"
-            href="https://www.instagram.com/stillsbybill_/"
-          >
-            <Instagram className="w-9 h-9 md:w-10 md:h-10" />
+      <footer style={{ borderTop: "2px solid #404040", padding: "70px 24px", position: "relative" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 18 }}>
+          <FooterIcon label="Instagram" href="https://www.instagram.com/stillsbybill_/">
+            <Instagram size={40} />
           </FooterIcon>
-
-          <FooterIcon
-            label="Email"
-            onClick={() => {
-              window.location.href = "mailto:stillsbybill55@gmail.com";
-            }}
-          >
-            <Mail className="w-9 h-9 md:w-10 md:h-10" />
+          <FooterIcon label="Email" onClick={() => (window.location.href = "mailto:stillsbybill55@gmail.com")}>
+            <Mail size={40} />
           </FooterIcon>
         </div>
 
-        <div className="mt-12 text-center text-[10px] tracking-[0.35em] uppercase text-neutral-600">
+        <div
+          style={{
+            marginTop: 42,
+            textAlign: "center",
+            fontSize: 10,
+            letterSpacing: "0.35em",
+            textTransform: "uppercase",
+            opacity: 0.55,
+          }}
+        >
           Photos by Billy Baker
         </div>
       </footer>
